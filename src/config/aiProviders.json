@@ -1,0 +1,314 @@
+{
+  "providers": {
+    "gemini": {
+      "name": "Google Gemini",
+      "apiUrl": "https://generativelanguage.googleapis.com/v1beta",
+      "models": [
+        {
+          "id": "gemini-1.5-flash",
+          "name": "Gemini 1.5 Flash",
+          "description": "快速响应模型，适合实时对话"
+        },
+        {
+          "id": "gemini-1.5-pro",
+          "name": "Gemini 1.5 Pro",
+          "description": "高质量模型，适合复杂任务"
+        }
+      ],
+      "parameters": {
+        "temperature": {
+          "type": "number",
+          "min": 0,
+          "max": 2,
+          "default": 0.7,
+          "description": "控制输出的随机性"
+        },
+        "maxTokens": {
+          "type": "number",
+          "min": 1,
+          "max": 8192,
+          "default": 4000,
+          "description": "控制生成内容的最大长度"
+        }
+      }
+    },
+    "openai": {
+      "name": "OpenAI",
+      "apiUrl": "https://api.openai.com/v1",
+      "models": [
+        {
+          "id": "gpt-3.5-turbo",
+          "name": "GPT-3.5 Turbo",
+          "description": "经济实惠的模型"
+        },
+        {
+          "id": "gpt-4",
+          "name": "GPT-4",
+          "description": "最强大的模型"
+        },
+        {
+          "id": "gpt-4-turbo",
+          "name": "GPT-4 Turbo",
+          "description": "更快更便宜的GPT-4"
+        }
+      ],
+      "parameters": {
+        "temperature": {
+          "type": "number",
+          "min": 0,
+          "max": 2,
+          "default": 0.7,
+          "description": "控制输出的随机性"
+        },
+        "maxTokens": {
+          "type": "number",
+          "min": 1,
+          "max": 4096,
+          "default": 4000,
+          "description": "控制生成内容的最大长度"
+        }
+      }
+    },
+    "deepseek": {
+      "name": "DeepSeek",
+      "apiUrl": "https://api.deepseek.com",
+      "models": [
+        {
+          "id": "deepseek-chat",
+          "name": "DeepSeek Chat",
+          "description": "标准对话模式，支持Function Calling、JSON Output"
+        },
+        {
+          "id": "deepseek-reasoner",
+          "name": "DeepSeek Reasoner",
+          "description": "思考模式，更强的推理能力，输出长度更大"
+        }
+      ],
+      "parameters": {
+        "temperature": {
+          "type": "number",
+          "min": 0,
+          "max": 2,
+          "default": 0.7,
+          "description": "控制输出的随机性"
+        },
+        "maxTokens": {
+          "type": "number",
+          "min": 1,
+          "max": 8000,
+          "default": 4000,
+          "description": "控制生成内容的最大长度"
+        },
+        "topP": {
+          "type": "number",
+          "min": 0,
+          "max": 1,
+          "default": 1.0,
+          "description": "控制生成内容的多样性"
+        },
+        "frequencyPenalty": {
+          "type": "number",
+          "min": -2,
+          "max": 2,
+          "default": 0.0,
+          "description": "减少重复内容"
+        },
+        "presencePenalty": {
+          "type": "number",
+          "min": -2,
+          "max": 2,
+          "default": 0.0,
+          "description": "鼓励新话题"
+        }
+      }
+    },
+    "claude": {
+      "name": "Anthropic Claude",
+      "apiUrl": "https://api.anthropic.com/v1",
+      "models": [
+        {
+          "id": "claude-3-sonnet",
+          "name": "Claude 3 Sonnet",
+          "description": "平衡性能和成本，适合大多数任务"
+        },
+        {
+          "id": "claude-3-opus",
+          "name": "Claude 3 Opus",
+          "description": "最强大的模型，适合复杂任务"
+        }
+      ],
+      "parameters": {
+        "temperature": {
+          "type": "number",
+          "min": 0,
+          "max": 1,
+          "default": 0.7,
+          "description": "控制输出的随机性"
+        },
+        "maxTokens": {
+          "type": "number",
+          "min": 1,
+          "max": 4096,
+          "default": 4000,
+          "description": "控制生成内容的最大长度"
+        }
+      }
+    },
+    "siliconflow": {
+      "name": "硅基流动 SiliconFlow",
+      "apiUrl": "https://api.siliconflow.cn/v1",
+      "models": [
+        {
+          "id": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+          "name": "DeepSeek-R1-0528-Qwen3-8B (免费)",
+          "description": "DeepSeek R1推理模型，基于Qwen3-8B，免费使用"
+        },
+        {
+          "id": "deepseek-ai/DeepSeek-V2.5",
+          "name": "DeepSeek-V2.5 (免费)",
+          "description": "DeepSeek V2.5模型，免费使用"
+        }
+      ],
+      "parameters": {
+        "temperature": {
+          "type": "number",
+          "min": 0,
+          "max": 2,
+          "default": 0.7,
+          "description": "控制输出的随机性"
+        },
+        "maxTokens": {
+          "type": "number",
+          "min": 1,
+          "max": 4096,
+          "default": 4000,
+          "description": "控制生成内容的最大长度"
+        },
+        "topP": {
+          "type": "number",
+          "min": 0,
+          "max": 1,
+          "default": 1.0,
+          "description": "控制生成内容的多样性"
+        },
+        "frequencyPenalty": {
+          "type": "number",
+          "min": -2,
+          "max": 2,
+          "default": 0.0,
+          "description": "减少重复内容"
+        },
+        "presencePenalty": {
+          "type": "number",
+          "min": -2,
+          "max": 2,
+          "default": 0.0,
+          "description": "鼓励新话题"
+        }
+      }
+    },
+    "openrouter": {
+      "name": "OpenRouter",
+      "apiUrl": "https://openrouter.ai/api/v1",
+      "models": [
+        {
+          "id": "meta-llama/llama-3.1-8b-instruct:free",
+          "name": "Llama 3.1 8B Instruct (免费)",
+          "description": "Meta Llama 3.1 8B指令模型，免费使用"
+        },
+        {
+          "id": "meta-llama/llama-3.1-70b-instruct:free",
+          "name": "Llama 3.1 70B Instruct (免费)",
+          "description": "Meta Llama 3.1 70B指令模型，免费使用"
+        },
+        {
+          "id": "microsoft/phi-3-mini-128k-instruct:free",
+          "name": "Phi-3 Mini 128K Instruct (免费)",
+          "description": "Microsoft Phi-3 Mini 128K指令模型，免费使用"
+        },
+        {
+          "id": "microsoft/phi-3-medium-128k-instruct:free",
+          "name": "Phi-3 Medium 128K Instruct (免费)",
+          "description": "Microsoft Phi-3 Medium 128K指令模型，免费使用"
+        },
+        {
+          "id": "google/gemma-2-9b-it:free",
+          "name": "Gemma 2 9B IT (免费)",
+          "description": "Google Gemma 2 9B指令模型，免费使用"
+        },
+        {
+          "id": "google/gemma-2-27b-it:free",
+          "name": "Gemma 2 27B IT (免费)",
+          "description": "Google Gemma 2 27B指令模型，免费使用"
+        },
+        {
+          "id": "mistralai/mistral-7b-instruct:free",
+          "name": "Mistral 7B Instruct (免费)",
+          "description": "Mistral 7B指令模型，免费使用"
+        },
+        {
+          "id": "mistralai/mixtral-8x7b-instruct:free",
+          "name": "Mixtral 8x7B Instruct (免费)",
+          "description": "Mistral Mixtral 8x7B指令模型，免费使用"
+        },
+        {
+          "id": "huggingface/zephyr-7b-beta:free",
+          "name": "Zephyr 7B Beta (免费)",
+          "description": "Hugging Face Zephyr 7B Beta模型，免费使用"
+        },
+        {
+          "id": "openchat/openchat-7b:free",
+          "name": "OpenChat 7B (免费)",
+          "description": "OpenChat 7B对话模型，免费使用"
+        },
+        {
+          "id": "teknium/openhermes-2.5-mistral-7b:free",
+          "name": "OpenHermes 2.5 Mistral 7B (免费)",
+          "description": "OpenHermes 2.5 Mistral 7B模型，免费使用"
+        },
+        {
+          "id": "undi95/toppy-m-7b:free",
+          "name": "Toppy M 7B (免费)",
+          "description": "Toppy M 7B模型，免费使用"
+        }
+      ],
+      "parameters": {
+        "temperature": {
+          "type": "number",
+          "min": 0,
+          "max": 2,
+          "default": 0.7,
+          "description": "控制输出的随机性"
+        },
+        "maxTokens": {
+          "type": "number",
+          "min": 1,
+          "max": 4096,
+          "default": 4000,
+          "description": "控制生成内容的最大长度"
+        },
+        "topP": {
+          "type": "number",
+          "min": 0,
+          "max": 1,
+          "default": 1.0,
+          "description": "控制生成内容的多样性"
+        },
+        "frequencyPenalty": {
+          "type": "number",
+          "min": -2,
+          "max": 2,
+          "default": 0.0,
+          "description": "减少重复内容"
+        },
+        "presencePenalty": {
+          "type": "number",
+          "min": -2,
+          "max": 2,
+          "default": 0.0,
+          "description": "鼓励新话题"
+        }
+      }
+    }
+  }
+}

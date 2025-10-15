@@ -124,15 +124,12 @@
     "language": "Language",
     "viewContent": "View Content",
     "backToTop": "Back to Top",
-    "backToConfig": "Back to Config",
     "openInMindElixir": "Open in Mind Elixir Desktop",
     "clearCache": "Clear Cache",
     "copiedToClipboard": "Copied to clipboard",
     "copyChapterSummary": "Copy Chapter Summary",
     "copyChapterContent": "Copy Chapter Content",
-    "copyContent": "Copy Content",
-    "expand": "Expand",
-    "collapse": "Collapse"
+    "copyContent": "Copy Content"
   },
   "config": {
     "title": "Configuration",
@@ -184,8 +181,6 @@
   },
   "download": {
     "title": "Download Mind Map",
-    "downloadAllMarkdown": "Download Complete Markdown",
-    "markdownDownloaded": "Markdown file downloaded",
     "formats": {
       "png": "Download as PNG",
       "jpeg": "Download as JPEG",
@@ -198,20 +193,5 @@
   "viewContent": {
     "originalText": "Original Content",
     "chapterContent": "Complete original content of Chapter {{chapter}}"
-  },
-  "reader": {
-    "pdf": {
-      "page": "Page {{startPage}}-{{endPage}}",
-      "close": "Close",
-      "previousPage": "Previous",
-      "nextPage": "Next",
-      "pageInfo": "Page {{current}} of {{total}}",
-      "pdfPageInfo": "PDF Page {{page}}",
-      "loadingPages": "Loading PDF pages..."
-    },
-    "epub": {
-      "close": "Close",
-      "loadingContent": "Loading chapter content..."
-    }
   }
 }

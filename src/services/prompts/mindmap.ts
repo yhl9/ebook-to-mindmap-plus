@@ -1,3 +1,5 @@
+
+
 export const getChapterMindMapPrompt = ()=> {
   const userPrompt = `\`\`\`ts
 export interface NodeObj {

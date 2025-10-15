@@ -85,15 +85,12 @@
     "delete": "删除",
     "viewContent": "查看内容",
     "backToTop": "回到顶部",
-    "backToConfig": "返回配置",
     "openInMindElixir": "在 Mind Elixir Desktop 中打开",
     "clearCache": "清除缓存",
     "copiedToClipboard": "已复制到剪贴板",
     "copyChapterSummary": "复制章节总结",
     "copyChapterContent": "复制章节内容",
     "copyContent": "复制内容",
-    "expand": "展开",
-    "collapse": "折叠",
     "error": "未知错误"
   },
   "config": {
@@ -146,8 +143,6 @@
   },
   "download": {
     "title": "下载思维导图",
-    "downloadAllMarkdown": "下载完整Markdown",
-    "markdownDownloaded": "Markdown文件已下载",
     "formats": {
       "png": "下载为 PNG",
       "jpeg": "下载为 JPEG",
@@ -160,21 +155,6 @@
   "viewContent": {
     "originalText": "原文内容",
     "chapterContent": "第 {{chapter}} 章的完整原文内容"
-  },
-  "reader": {
-    "pdf": {
-      "page": "第{{startPage}}-{{endPage}}页",
-      "close": "关闭",
-      "previousPage": "上一页",
-      "nextPage": "下一页",
-      "pageInfo": "第 {{current}} 页，共 {{total}} 页",
-      "pdfPageInfo": "PDF第{{page}}页",
-      "loadingPages": "正在加载PDF页面..."
-    },
-    "epub": {
-      "close": "关闭",
-      "loadingContent": "正在加载章节内容..."
-    }
   },
   "mindElixir": {
     "launchSuccess": "已成功发送到 Mind Elixir Desktop",

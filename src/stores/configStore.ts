@@ -3,12 +3,17 @@ import { persist } from 'zustand/middleware'
 import type { SupportedLanguage } from '../services/prompts/utils'
 
 // AI配置接口
-interface AIConfig {
-  provider: 'gemini' | 'openai' | 'ollama'
+export interface AIConfig {
+  provider: 'gemini' | 'openai' | 'deepseek' | 'claude' | 'siliconflow' | 'openrouter'
   apiKey: string
   apiUrl: string
   model: string
   temperature: number
+  // 通用参数
+  maxTokens?: number
+  topP?: number
+  frequencyPenalty?: number
+  presencePenalty?: number
 }
 
 // 处理选项接口
@@ -25,11 +30,17 @@ interface ProcessingOptions {
 interface ConfigState {
   // AI配置
   aiConfig: AIConfig
-  setAiProvider: (provider: 'gemini' | 'openai' | 'ollama') => void
+  setAiProvider: (provider: 'gemini' | 'openai' | 'deepseek') => void
   setApiKey: (apiKey: string) => void
   setApiUrl: (apiUrl: string) => void
   setModel: (model: string) => void
   setTemperature: (temperature: number) => void
+  
+  // DeepSeek特有配置方法
+  setMaxTokens: (maxTokens: number) => void
+  setTopP: (topP: number) => void
+  setFrequencyPenalty: (penalty: number) => void
+  setPresencePenalty: (penalty: number) => void
   
   // 处理选项
   processingOptions: ProcessingOptions
@@ -47,8 +58,14 @@ const defaultAIConfig: AIConfig = {
   apiKey: '',
   apiUrl: 'https://api.openai.com/v1',
   model: 'gemini-1.5-flash',
-  temperature: 0.7
+  temperature: 0.7,
+  // DeepSeek默认参数
+  maxTokens: 4000,
+  topP: 1.0,
+  frequencyPenalty: 0.0,
+  presencePenalty: 0.0
 }
+
 
 const defaultProcessingOptions: ProcessingOptions = {
   processingMode: 'mindmap',
@@ -79,6 +96,20 @@ export const useConfigStore = create<ConfigState>()(
       })),
       setTemperature: (temperature) => set((state) => ({
         aiConfig: { ...state.aiConfig, temperature }
+      })),
+      
+      // DeepSeek特有配置方法
+      setMaxTokens: (maxTokens) => set((state) => ({
+        aiConfig: { ...state.aiConfig, maxTokens }
+      })),
+      setTopP: (topP) => set((state) => ({
+        aiConfig: { ...state.aiConfig, topP }
+      })),
+      setFrequencyPenalty: (frequencyPenalty) => set((state) => ({
+        aiConfig: { ...state.aiConfig, frequencyPenalty }
+      })),
+      setPresencePenalty: (presencePenalty) => set((state) => ({
+        aiConfig: { ...state.aiConfig, presencePenalty }
       })),
       
       // 处理选项
