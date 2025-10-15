@@ -13,7 +13,13 @@
 
 ### 🤖 AI 驱动的内容处理
 
-- **多种 AI 服务**：支持 Google Gemini 和 OpenAI GPT 模型
+- **多种 AI 服务**：支持 6 大主流 AI 服务提供商
+  - **Google Gemini**：Gemini 1.5 Flash/Pro 模型
+  - **OpenAI**：GPT-3.5 Turbo、GPT-4、GPT-4 Turbo
+  - **DeepSeek**：DeepSeek Chat、DeepSeek Reasoner
+  - **Anthropic Claude**：Claude 3 Sonnet、Claude 3 Opus
+  - **硅基流动 SiliconFlow**：DeepSeek-R1、DeepSeek-V2.5（免费）
+  - **OpenRouter**：Llama 3.1、Phi-3、Gemma 2、Mistral 等（免费）
 - **三种处理模式**：
   - 📝 **文字总结模式**：生成章节总结、分析章节关联、输出全书总结
   - 🧠 **章节思维导图模式**：为每个章节生成独立的思维导图
@@ -38,6 +44,8 @@
 - **实时进度**：处理过程可视化，实时显示当前步骤
 - **交互式思维导图**：支持缩放、拖拽、节点展开/折叠
 - **内容预览**：支持查看原始章节内容
+- **多语言支持**：支持中文、英文界面切换
+- **智能语言检测**：自动检测并适配用户语言偏好
 
 ## 🚀 快速开始
 
@@ -50,8 +58,8 @@
 
 ```bash
 # 克隆项目
-git clone https://github.com/SSShooter/ebook-to-mindmap
-cd ebook-to-mindmap
+git clone https://github.com/yhl9/ebook-to-mindmap-plus
+cd ebook-to-mindmap-plus
 
 # 安装依赖
 pnpm install
@@ -77,8 +85,12 @@ npm run dev
 
 1. 点击「配置」按钮
 2. 选择 AI 服务提供商：
-   - **Google Gemini**（推荐）：需要 Gemini API Key
-   - **OpenAI GPT**：需要 OpenAI API Key 和 API 地址
+   - **硅基流动 SiliconFlow**(推荐，很显然，免费嘛...嘿嘿，你懂的...)
+   - **OpenRouter** (推荐，还是因为免费。不过调用次数太少了一点。好在可以测试更多的模型。)
+   - **DeepSeek**：（推荐，原因：便宜，性价比拉满）DeepSeek Chat、DeepSeek Reasoner
+   - **Google Gemini** ：需要 Gemini API Key （需要梯）
+   - **OpenAI GPT**：需要 OpenAI API Key 和 API 地址 （需要梯）
+
 3. 输入相应的 API Key
 4. 选择模型（可选，使用默认模型即可）
 
@@ -98,6 +110,18 @@ npm run dev
 3. 创建新的 API Key
 4. 复制 API Key 到配置中
 
+### 💰 免费 AI 服务
+
+本应用支持多个免费 AI 服务，无需付费即可使用：
+
+- **硅基流动 SiliconFlow**：提供 DeepSeek-R1、DeepSeek-V2.5 等免费模型
+- **OpenRouter**：提供多个免费模型，包括：
+  - Llama 3.1 8B/70B Instruct
+  - Phi-3 Mini/Medium 128K Instruct  
+  - Gemma 2 9B/27B IT
+  - Mistral 7B/Mixtral 8x7B Instruct
+  - 等多个开源模型
+
 这里还有一些[免费方案](https://github.com/SSShooter/Video-Summary/blob/master/guide/index.md)可供参考。
 
 ### 2. 上传电子书文件
@@ -112,9 +136,9 @@ npm run dev
 
 #### 处理模式
 
-- **文字总结模式**：适合需要文字总结的场景
-- **章节思维导图模式**：为每个章节生成独立思维导图
-- **整书思维导图模式**：生成整本书的统一思维导图
+- **文字总结模式**：适合需要文字总结的场景，生成章节总结、分析章节关联、输出全书总结
+- **章节思维导图模式**：为每个章节生成独立思维导图，便于分章节学习
+- **整书思维导图模式**：生成整本书的统一思维导图，展示全书知识结构
 
 #### 书籍类型
 
@@ -125,7 +149,9 @@ npm run dev
 
 - **智能章节检测**：启用后会使用 AI 智能识别章节边界
 - **跳过无关章节**：自动跳过前言、目录、致谢等内容
-- **子章节深度**：设置提取子章节的层级深度（0-3）
+- **子章节深度**：设置提取子章节的层级深度（0-5）
+- **输出语言**：支持中文、英文、日文、法文、德文、西班牙文、俄文等多种语言
+- **自定义提示词**：支持添加自定义提示词，指导 AI 生成更符合需求的内容
 
 ### 4. 提取章节
 
@@ -165,13 +191,20 @@ npm run dev
 - **构建工具**：Vite
 - **样式方案**：Tailwind CSS + shadcn/ui
 - **状态管理**：Zustand
+- **国际化**：react-i18next
 - **文件解析**：
   - EPUB：@smoores/epub + epubjs
   - PDF：pdfjs-dist
-- **思维导图**：mind-elixir
+- **思维导图**：mind-elixir + @mind-elixir/export-mindmap
 - **AI 服务**：
   - Google Gemini：@google/generative-ai
   - OpenAI：自定义实现
+  - DeepSeek：自定义实现
+  - Claude：自定义实现
+  - SiliconFlow：自定义实现
+  - OpenRouter：自定义实现
+- **缓存系统**：本地存储 + 智能缓存管理
+- **导出功能**：多格式导出支持
 
 ## 🔧 高级功能
 
@@ -189,12 +222,17 @@ npm run dev
 - **章节选择**：支持批量选择/取消选择章节
 - **并发处理**：多个章节可并行处理（受 API 限制）
 - **断点续传**：处理中断后可从上次位置继续
+- **自定义提示词**：支持为每个处理任务添加自定义提示词
+- **多语言输出**：支持指定 AI 生成内容的语言
 
 ### 导出功能
 
-- **思维导图导出**：支持导出为 PNG、SVG 等格式
-- **文字总结导出**：支持导出为 Markdown、TXT 格式
-- **数据备份**：支持导出处理结果数据
+- **思维导图导出**：支持多种格式导出
+  - **图片格式**：PNG、JPEG、WEBP
+  - **文档格式**：HTML、Markdown
+  - **数据格式**：JSON（便于二次处理）
+- **MindElixir 集成**：支持在 MindElixir Desktop 中打开思维导图
+- **数据备份**：支持导出处理结果数据，便于离线查看
 
 ## 📄 许可证
 
