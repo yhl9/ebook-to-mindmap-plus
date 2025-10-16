@@ -1,0 +1,53 @@
+{
+  "providers": {
+    "example-provider": {
+      "name": "Example AI Provider",
+      "apiUrl": "https://api.example-ai.com/v1",
+      "models": [
+        {
+          "id": "example-model-1",
+          "name": "Example Model 1",
+          "description": "Fast response model for general tasks"
+        },
+        {
+          "id": "example-model-2",
+          "name": "Example Model 2", 
+          "description": "High quality model for complex tasks"
+        }
+      ],
+      "parameters": {
+        "temperature": {
+          "type": "number",
+          "min": 0,
+          "max": 2,
+          "default": 0.7,
+          "description": "Controls output randomness"
+        },
+        "maxTokens": {
+          "type": "number",
+          "min": 1,
+          "max": 4096,
+          "default": 4000,
+          "description": "Controls maximum length of generated content"
+        },
+        "topP": {
+          "type": "number",
+          "min": 0,
+          "max": 1,
+          "default": 1.0,
+          "description": "Controls diversity of generated content"
+        },
+        "stream": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable streaming output"
+        },
+        "style": {
+          "type": "string",
+          "default": "professional",
+          "description": "Output style preference"
+        }
+      }
+    }
+  }
+}

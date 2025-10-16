@@ -18,6 +18,8 @@ import { TextContentProcessor } from './services/textContentProcessor'
 import { AIService } from './services/geminiService'
 import { CacheService } from './services/cacheService'
 import { DynamicConfigDialog } from './components/project/DynamicConfigDialog'
+import { ThemeSwitcher } from './components/ThemeSwitcher'
+import { useThemeStore } from './stores/themeStore'
 import type { MindElixirData } from 'mind-elixir'
 import type { Summary } from 'node_modules/mind-elixir/dist/types/summary'
 import { LanguageSwitcher } from './components/LanguageSwitcher'
@@ -60,6 +62,8 @@ const cacheService = new CacheService()
 
 function App() {
   const { t } = useTranslation()
+  const { getThemeConfig } = useThemeStore()
+  const theme = getThemeConfig()
   const [file, setFile] = useState<File | null>(null)
   const [webUrl, setWebUrl] = useState('')
   const [textContent, setTextContent] = useState('')
@@ -67,6 +71,8 @@ function App() {
   const [webProcessing, setWebProcessing] = useState(false)
   const [textProcessing, setTextProcessing] = useState(false)
   const [processing, setProcessing] = useState(false)
+  const [inputCardCollapsed, setInputCardCollapsed] = useState(false)
+  const [chaptersCardCollapsed, setChaptersCardCollapsed] = useState(false)
   const [extractingChapters, setExtractingChapters] = useState(false)
   const [progress, setProgress] = useState(0)
   const [currentStep, setCurrentStep] = useState('')
@@ -282,6 +288,9 @@ function App() {
       // 默认选中所有章节
       setSelectedChapters(new Set(chapters.map(chapter => chapter.id)))
       setCurrentStep(`网页章节提取完成！共提取到 ${chapters.length} 个章节`)
+      
+      // 自动折叠输入卡片
+      setInputCardCollapsed(true)
 
       toast.success(`成功提取 ${chapters.length} 个章节`, {
         duration: 3000,
@@ -336,6 +345,9 @@ function App() {
       // 默认选中所有章节
       setSelectedChapters(new Set(chapters.map(chapter => chapter.id)))
       setCurrentStep(`文本章节提取完成！共提取到 ${chapters.length} 个章节`)
+      
+      // 自动折叠输入卡片
+      setInputCardCollapsed(true)
 
       toast.success(`成功提取 ${chapters.length} 个章节`, {
         duration: 3000,
@@ -421,6 +433,9 @@ function App() {
       // 默认选中所有章节
       setSelectedChapters(new Set(chapters.map(chapter => chapter.id)))
       setCurrentStep(`章节提取完成！共提取到 ${chapters.length} 个章节`)
+      
+      // 自动折叠输入卡片
+      setInputCardCollapsed(true)
 
       toast.success(`成功提取 ${chapters.length} 个章节`, {
         duration: 3000,
@@ -444,6 +459,9 @@ function App() {
       })
       return
     }
+    
+    // 自动折叠章节卡片
+    setChaptersCardCollapsed(true)
     const cacheKey = inputMode === 'file' ? file?.name : 
                      inputMode === 'url' ? webUrl : 
                      inputMode === 'text' ? `text_${textContent.substring(0, 50)}` : null
@@ -686,30 +704,72 @@ function App() {
   }, [extractedChapters, bookData, apiKey, file, webUrl, textContent, inputMode, selectedChapters, processingMode, bookType, customPrompt, processingOptions.outputLanguage, t])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+    <div className={`min-h-screen bg-gradient-to-br ${theme.gradients.background} p-4 relative overflow-hidden`}>
+      {/* 动态背景装饰 */}
+      <div className="absolute inset-0 bg-gradient-to-r from-blue-400/10 via-purple-400/10 to-pink-400/10 animate-pulse"></div>
+      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-transparent via-white/5 to-white/10"></div>
+      
       <Toaster />
-      <div className="max-w-6xl mx-auto space-y-6">
-        <div className="text-center space-y-2 relative">
-          <h1 className="text-4xl font-bold text-gray-900 flex items-center justify-center gap-2">
-            <BookOpen className="h-8 w-8 text-blue-600" />
-            {t('app.title')}
-          </h1>
-          <p className="text-gray-600">{t('app.description')}</p>
-          <LanguageSwitcher />
+      <div className="max-w-6xl mx-auto space-y-6 relative z-10">
+        <div className="relative">
+          <div className="flex items-center justify-center gap-6 -ml-[320px]">
+            {/* 标题区域 - 居中显示 */}
+            <div className="flex items-center justify-center">
+              <div className={`inline-flex items-center gap-3 ${theme.surface} backdrop-blur-sm rounded-2xl px-6 py-4 ${theme.shadow} border ${theme.border}`}>
+                <div className={`p-2 bg-gradient-to-br ${theme.gradients.button} rounded-xl`}>
+                  <BookOpen className="h-8 w-8 text-white" />
+                </div>
+                <div>
+                  <h1 className={`text-3xl font-bold bg-gradient-to-r ${theme.gradients.text} bg-clip-text text-transparent`}>
+                    {t('app.title')}
+                  </h1>
+                  <p className={`text-sm ${theme.textSecondary} mt-1`}>{t('app.description')}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* 按钮区域 - 与语言切换同一行，居中显示 */}
+          <div className="flex items-center justify-center gap-3 mt-4 absolute  right-0 top-0">
+            <LanguageSwitcher />
+            <ThemeSwitcher />
+            <DynamicConfigDialog processing={processing} />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={clearBookCache}
+              disabled={processing}
+              className="flex items-center gap-1 text-red-500 hover:text-red-700 hover:bg-red-50 transition-all duration-200 "
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              {t('upload.clearCache')}
+            </Button>
+          </div>
         </div>
 
-        {/* 文件上传和配置 */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Upload className="h-5 w-5" />
-              {t('upload.title')}
+        {/* 输入设定 */}
+        <Card className={`${theme.surface} backdrop-blur-sm border ${theme.border} ${theme.shadow} hover:shadow-2xl transition-all duration-300`}>
+          <CardHeader 
+            className={`bg-gradient-to-r ${theme.gradients.card} rounded-t-lg cursor-pointer hover:bg-gradient-to-r hover:from-blue-100/50 hover:to-purple-100/50 transition-all duration-200`}
+            onClick={() => setInputCardCollapsed(!inputCardCollapsed)}
+          >
+            <CardTitle className={`flex items-center justify-between ${theme.text}`}>
+              <div className="flex items-center gap-2">
+                <div className={`p-2 bg-gradient-to-br ${theme.gradients.button} rounded-lg`}>
+                  <Upload className="h-5 w-5 text-white" />
+                </div>
+                {t('upload.title')}
+              </div>
+              <ChevronUp className={`h-5 w-5 ${theme.textSecondary} transition-transform duration-200 ${inputCardCollapsed ? 'rotate-180' : ''}`} />
             </CardTitle>
-            <CardDescription>
+            <CardDescription className={theme.textSecondary}>
               {t('upload.description')}
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
+            inputCardCollapsed ? 'max-h-0 opacity-0' : 'max-h-[2000px] opacity-100'
+          }`}>
+            <CardContent className="space-y-4">
             {/* 输入模式选择 */}
             <div className="space-y-2">
               <Label>{t('upload.inputMode')}</Label>
@@ -719,7 +779,11 @@ function App() {
                   size="sm"
                   onClick={() => handleInputModeChange('file')}
                   disabled={processing}
-                  className="flex items-center gap-2"
+                  className={`flex items-center gap-2 transition-all duration-200 ${
+                    inputMode === 'file' 
+                      ? 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 shadow-lg' 
+                      : 'hover:bg-blue-50 hover:border-blue-300'
+                  }`}
                 >
                   <FileText className="h-4 w-4" />
                   {t('upload.fileMode')}
@@ -729,7 +793,11 @@ function App() {
                   size="sm"
                   onClick={() => handleInputModeChange('url')}
                   disabled={processing}
-                  className="flex items-center gap-2"
+                  className={`flex items-center gap-2 transition-all duration-200 ${
+                    inputMode === 'url' 
+                      ? 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 shadow-lg' 
+                      : 'hover:bg-blue-50 hover:border-blue-300'
+                  }`}
                 >
                   <Globe className="h-4 w-4" />
                   {t('upload.urlMode')}
@@ -739,7 +807,11 @@ function App() {
                   size="sm"
                   onClick={() => handleInputModeChange('text')}
                   disabled={processing}
-                  className="flex items-center gap-2"
+                  className={`flex items-center gap-2 transition-all duration-200 ${
+                    inputMode === 'text' 
+                      ? 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 shadow-lg' 
+                      : 'hover:bg-blue-50 hover:border-blue-300'
+                  }`}
                 >
                   <FileText className="h-4 w-4" />
                   {t('upload.textMode')}
@@ -750,13 +822,14 @@ function App() {
             {/* 文件输入 */}
             {inputMode === 'file' && (
               <div className="space-y-2">
-                <Label htmlFor="file">{t('upload.selectFile')}</Label>
+                <Label htmlFor="file" className="text-gray-700 font-medium">{t('upload.selectFile')}</Label>
                 <Input
                   id="file"
                   type="file"
                   accept=".epub,.pdf,.docx,.doc,.html,.htm"
                   onChange={handleFileChange}
                   disabled={processing}
+                  className="border-gray-200 focus:border-blue-400 focus:ring-blue-400/20 transition-all duration-200 hover:border-gray-300"
                 />
               </div>
             )}
@@ -764,7 +837,7 @@ function App() {
             {/* URL输入 */}
             {inputMode === 'url' && (
               <div className="space-y-2">
-                <Label htmlFor="url">{t('upload.enterUrl')}</Label>
+                <Label htmlFor="url" className="text-gray-700 font-medium">{t('upload.enterUrl')}</Label>
                 <Input
                   id="url"
                   type="url"
@@ -772,8 +845,9 @@ function App() {
                   value={webUrl}
                   onChange={handleUrlChange}
                   disabled={processing}
+                  className="border-gray-200 focus:border-blue-400 focus:ring-blue-400/20 transition-all duration-200 hover:border-gray-300"
                 />
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-500 bg-blue-50/50 p-2 rounded-lg">
                   {t('upload.urlDescription')}
                 </p>
               </div>
@@ -782,54 +856,52 @@ function App() {
             {/* 文本输入 */}
             {inputMode === 'text' && (
               <div className="space-y-2">
-                <Label htmlFor="text">{t('upload.enterText')}</Label>
+                <Label htmlFor="text" className="text-gray-700 font-medium">{t('upload.enterText')}</Label>
                 <Textarea
                   id="text"
                   placeholder={t('upload.textPlaceholder')}
                   value={textContent}
                   onChange={(e) => setTextContent(e.target.value)}
                   disabled={processing}
-                  className="min-h-32 resize-none"
+                  className="min-h-32 resize-none border-gray-200 focus:border-blue-400 focus:ring-blue-400/20 transition-all duration-200 hover:border-gray-300"
                   maxLength={2000}
                 />
-                <div className="flex justify-between text-xs text-gray-500">
-                  <span>{t('upload.textDescription')}</span>
-                  <span>{textContent.length}/2000</span>
+                <div className="flex justify-between text-xs bg-gradient-to-r from-blue-50/50 to-purple-50/50 p-2 rounded-lg">
+                  <span className="text-gray-600">{t('upload.textDescription')}</span>
+                  <span className={`font-medium ${textContent.length > 1800 ? 'text-red-500' : textContent.length > 1500 ? 'text-yellow-500' : 'text-gray-500'}`}>
+                    {textContent.length}/2000
+                  </span>
                 </div>
               </div>
             )}
 
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between bg-gradient-to-r from-gray-50/50 to-blue-50/50 p-3 rounded-lg border border-gray-100">
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 {inputMode === 'file' ? (
                   <>
-                    <FileText className="h-4 w-4" />
-                    {t('upload.selectedFile')}: {file?.name || t('upload.noFileSelected')}
+                    <div className="p-1 bg-blue-100 rounded">
+                      <FileText className="h-4 w-4 text-blue-600" />
+                    </div>
+                    <span className="font-medium">{t('upload.selectedFile')}:</span>
+                    <span className="text-gray-800">{file?.name || t('upload.noFileSelected')}</span>
                   </>
                 ) : inputMode === 'url' ? (
                   <>
-                    <Globe className="h-4 w-4" />
-                    {t('upload.selectedUrl')}: {webUrl || t('upload.noUrlEntered')}
+                    <div className="p-1 bg-green-100 rounded">
+                      <Globe className="h-4 w-4 text-green-600" />
+                    </div>
+                    <span className="font-medium">{t('upload.selectedUrl')}:</span>
+                    <span className="text-gray-800">{webUrl || t('upload.noUrlEntered')}</span>
                   </>
                 ) : (
                   <>
-                    <FileText className="h-4 w-4" />
-                    {t('upload.selectedText')}: {textContent ? `${textContent.length} 字符` : t('upload.noTextEntered')}
+                    <div className="p-1 bg-purple-100 rounded">
+                      <FileText className="h-4 w-4 text-purple-600" />
+                    </div>
+                    <span className="font-medium">{t('upload.selectedText')}:</span>
+                    <span className="text-gray-800">{textContent ? `${textContent.length} 字符` : t('upload.noTextEntered')}</span>
                   </>
                 )}
-              </div>
-              <div className="flex items-center gap-2">
-                <DynamicConfigDialog processing={processing} />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={clearBookCache}
-                  disabled={processing}
-                  className="flex items-center gap-1 text-red-500 hover:text-red-700 hover:bg-red-50"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                  {t('upload.clearCache')}
-                </Button>
               </div>
             </div>
             <div className="space-y-2">
@@ -837,7 +909,7 @@ function App() {
                 <Button
                   onClick={extractFileChapters}
                   disabled={!file || extractingChapters || processing}
-                  className="w-full"
+                  className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]"
                 >
                   {extractingChapters ? (
                     <>
@@ -855,7 +927,7 @@ function App() {
                 <Button
                   onClick={handleWebUrlExtract}
                   disabled={!webUrl.trim() || webProcessing || processing}
-                  className="w-full"
+                  className="w-full bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]"
                 >
                   {webProcessing ? (
                     <>
@@ -873,7 +945,7 @@ function App() {
                 <Button
                   onClick={handleTextExtract}
                   disabled={!textContent.trim() || textProcessing || processing}
-                  className="w-full"
+                  className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]"
                 >
                   {textProcessing ? (
                     <>
@@ -889,18 +961,27 @@ function App() {
                 </Button>
               )}
             </div>
-          </CardContent>
+            </CardContent>
+          </div>
         </Card>
 
 
 
         {/* 章节信息 */}
         {extractedChapters && bookData && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <List className="h-5 w-5" />
-                {t('chapters.title')}
+          <Card className="bg-white/80 backdrop-blur-sm border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300">
+            <CardHeader 
+              className="bg-gradient-to-r from-green-50/50 to-blue-50/50 rounded-t-lg cursor-pointer hover:bg-gradient-to-r hover:from-green-100/50 hover:to-blue-100/50 transition-all duration-200"
+              onClick={() => setChaptersCardCollapsed(!chaptersCardCollapsed)}
+            >
+              <CardTitle className="flex items-center justify-between text-gray-800">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 bg-gradient-to-br from-green-500 to-blue-600 rounded-lg">
+                    <List className="h-5 w-5 text-white" />
+                  </div>
+                  {t('chapters.title')}
+                </div>
+                <ChevronUp className={`h-5 w-5 text-gray-500 transition-transform duration-200 ${chaptersCardCollapsed ? 'rotate-180' : ''}`} />
               </CardTitle>
               <CardDescription>
                 {bookData.title} - {bookData.author} | {t('chapters.totalChapters', { count: extractedChapters.length })}，{t('chapters.selectedChapters', { count: selectedChapters.size })}
@@ -916,7 +997,10 @@ function App() {
                 </Label>
               </div>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
+              chaptersCardCollapsed ? 'max-h-0 opacity-0' : 'max-h-[2000px] opacity-100'
+            }`}>
+              <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
                 {extractedChapters.map((chapter) => (
                   <div key={chapter.id} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
@@ -980,18 +1064,23 @@ function App() {
                   </>
                 )}
               </Button>
-            </CardContent>
+              </CardContent>
+            </div>
           </Card>
         )}
         {(processing || extractingChapters || webProcessing || textProcessing) && (
-          <Card>
-            <CardContent>
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>{currentStep}</span>
-                  <span>{Math.round(progress)}%</span>
+          <Card className="bg-white/80 backdrop-blur-sm border-white/20 shadow-xl">
+            <CardContent className="bg-gradient-to-r from-blue-50/50 to-purple-50/50">
+              <div className="space-y-3">
+                <div className="flex justify-between text-sm font-medium">
+                  <span className="text-gray-700">{currentStep}</span>
+                  <span className="text-blue-600">{Math.round(progress)}%</span>
                 </div>
-                <Progress value={progress} className="w-full" />
+                <Progress value={progress} className="w-full h-2" />
+                <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  <span>正在处理中，请稍候...</span>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -1000,15 +1089,22 @@ function App() {
 
         {/* 结果展示 */}
         {(bookSummary || bookMindMap) && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+          <Card className="bg-white/80 backdrop-blur-sm border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300">
+            <CardHeader className="bg-gradient-to-r from-purple-50/50 to-pink-50/50 rounded-t-lg">
+              <CardTitle className="flex items-center gap-2 text-gray-800">
+                <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg">
+                  {processingMode === 'summary' ? (
+                    <BookOpen className="h-5 w-5 text-white" />
+                  ) : (
+                    <Network className="h-5 w-5 text-white" />
+                  )}
+                </div>
                 {processingMode === 'summary' ? (
-                  <><BookOpen className="h-5 w-5" />{t('results.summaryTitle', { title: bookSummary?.title })}</>
+                  t('results.summaryTitle', { title: bookSummary?.title })
                 ) : processingMode === 'mindmap' ? (
-                  <><Network className="h-5 w-5" />{t('results.chapterMindMapTitle', { title: bookMindMap?.title })}</>
+                  t('results.chapterMindMapTitle', { title: bookMindMap?.title })
                 ) : (
-                  <><Network className="h-5 w-5" />{t('results.wholeMindMapTitle', { title: bookMindMap?.title })}</>
+                  t('results.wholeMindMapTitle', { title: bookMindMap?.title })
                 )}
               </CardTitle>
               <CardDescription>
@@ -1164,6 +1260,35 @@ function App() {
           <ChevronUp className="h-6 w-6" />
         </Button>
       )}
+      
+      {/* 项目信息 */}
+      <div className="mt-12 pt-8 border-t border-gray-200/50 relative z-10">
+        <div className="text-center space-y-3">
+          <div className="text-sm text-gray-600 select-text">
+            <p className="mb-2">
+              项目地址：
+              <a 
+                href="https://github.com/yhl9/ebook-to-mindmap-plus" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:text-blue-800 underline ml-1 transition-colors duration-200 cursor-pointer"
+              >
+                https://github.com/yhl9/ebook-to-mindmap-plus
+              </a>
+              ，觉得不错，可以给一个⭐
+            </p>
+            <p className="text-gray-500">
+              如有好的建议，欢迎留言或者 email: 
+              <a 
+                href="mailto:yhluns@163.com" 
+                className="text-blue-600 hover:text-blue-800 underline transition-colors duration-200 cursor-pointer"
+              >
+                yhluns@163.com
+              </a>
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

@@ -10,7 +10,9 @@ import { Languages } from 'lucide-react'
 
 const languages = [
   { code: 'zh', name: '中文', flag: '🇨🇳' },
-  { code: 'en', name: 'English', flag: '🇺🇸' }
+  { code: 'en', name: 'English', flag: '🇺🇸' },
+  { code: 'es', name: 'Español', flag: '🇪🇸' },
+  { code: 'pt', name: 'Português', flag: '🇧🇷' }
 ]
 
 export function LanguageSwitcher() {
@@ -25,7 +27,7 @@ export function LanguageSwitcher() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="flex items-center gap-2 absolute right-0 top-0">
+        <Button variant="outline" size="sm" className="flex items-center gap-2 right-0 top-0">
           <Languages className="h-4 w-4" />
           <span className="hidden sm:inline">{currentLanguage.flag} {currentLanguage.name}</span>
           <span className="sm:hidden">{currentLanguage.flag}</span>

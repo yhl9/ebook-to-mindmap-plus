@@ -161,8 +161,8 @@ export function DynamicConfigDialog({ processing }: DynamicConfigDialogProps) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" disabled={processing}>
-          <Settings className="h-4 w-4 mr-2" />
+        <Button variant="outline" size="sm" disabled={processing} className="text-lg font-bold">
+          <Settings className="h-5 w-5 mr-2" />
           配置
         </Button>
       </DialogTrigger>

@@ -127,7 +127,7 @@ Here are some [free alternatives](https://github.com/SSShooter/Video-Summary/blo
 
 **Method 2: Web URL**
 1. Select "Web URL" mode
-2. Enter web page URL in the input box (e.g., `https://example.com/article`)
+2. Enter web page URL in the input box (e.g., `https://www.cnblogs.com/blogaz/p/7472829.html`)
 3. System will automatically fetch web content and parse chapters
 
 **Method 3: Text Input**
@@ -188,6 +188,9 @@ Depending on the selected processing mode, you can view different types of resul
 - **Export Function**: Support exporting as images or other formats
 
 ## 🛠️ Technical Architecture
+
+### Add AI supplier manually 
+Add AI supplier manually [how to](docs/en/ai-providers-configuration.md)
 
 ### Core Technology Stack
 
