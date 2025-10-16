@@ -19,11 +19,16 @@ interface Chapter {
 }
 
 interface AIConfig {
-  provider: 'gemini' | 'openai' | 'ollama'
+  provider: 'gemini' | 'openai' | 'deepseek' | 'claude' | 'siliconflow' | 'openrouter'
   apiKey: string
   apiUrl?: string // 用于OpenAI兼容的API地址
   model?: string
   temperature?: number
+  // DeepSeek特有参数
+  maxTokens?: number
+  topP?: number
+  frequencyPenalty?: number
+  presencePenalty?: number
 }
 
 export class AIService {

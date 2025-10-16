@@ -1,6 +1,6 @@
 # E-book to Mind Map
 
-An intelligent e-book parsing tool powered by AI technology that converts EPUB and PDF format e-books into structured mind maps and text summaries.
+An intelligent e-book parsing tool powered by AI technology that converts EPUB, PDF, Word and HTML format documents, as well as web URLs, into structured mind maps and text summaries.
 
 ## ✨ Features
 
@@ -8,6 +8,25 @@ An intelligent e-book parsing tool powered by AI technology that converts EPUB a
 
 - **EPUB Files**: Complete support for parsing and processing EPUB format e-books
 - **PDF Files**: Intelligent PDF document parsing with table of contents-based and smart chapter extraction
+- **Word Files**: Support for DOCX and DOC format document parsing and chapter extraction
+  - Recommended to use DOCX format for best compatibility
+  - Support for HTML structure-based title chapter extraction
+  - Intelligent recognition of title styles and chapter structure in Word documents
+- **HTML Files**: Support for HTML and HTM format document parsing and chapter extraction
+  - Intelligent parsing of HTML document structure, extracting titles and content
+  - Support for chapter detection based on HTML heading tags (h1-h6)
+  - Automatic filtering of navigation, footer and other non-content elements
+  - Support for extracting document title and author information from meta tags
+- **Web URLs**: Support for direct web URL input to fetch and parse content
+  - Automatically fetch web HTML content and parse chapter structure
+  - Intelligent extraction of web page titles and author information
+  - Support for various web formats (news articles, blogs, technical documents, etc.)
+  - Automatic handling of CORS restrictions and network issues
+- **Text Input**: Support for direct text input or pasting
+  - Support up to 2000 characters of text content input
+  - Intelligently analyze text structure and extract chapters
+  - Support multiple chapter format recognition (Chapter X, 第X章, etc.)
+  - Automatically extract titles and author information
 
 ### 🤖 AI-Powered Content Processing
 
@@ -98,11 +117,24 @@ First-time use requires AI service configuration:
 
 Here are some [free alternatives](https://github.com/SSShooter/Video-Summary/blob/master/guide/index.md) for reference.
 
-### 2. Upload E-book File
+### 2. Upload E-book File, Enter Web URL, or Paste Text Content
 
-1. Click "Select EPUB or PDF File" button
-2. Choose the e-book file to process
-3. Supported formats: `.epub`, `.pdf`
+**Method 1: File Upload**
+1. Select "File Upload" mode
+2. Click "Select EPUB, PDF, Word or HTML File" button
+3. Choose the document file to process
+4. Supported formats: `.epub`, `.pdf`, `.docx`, `.doc`, `.html`, `.htm`
+
+**Method 2: Web URL**
+1. Select "Web URL" mode
+2. Enter web page URL in the input box (e.g., `https://example.com/article`)
+3. System will automatically fetch web content and parse chapters
+
+**Method 3: Text Input**
+1. Select "Text Input" mode
+2. Directly input or paste text content in the text box
+3. Support up to 2000 characters of text content
+4. System will intelligently analyze text structure and extract chapters
 
 ### 3. Configure Processing Options
 

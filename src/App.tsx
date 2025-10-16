@@ -8,9 +8,13 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Textarea } from '@/components/ui/textarea'
-import { Upload, BookOpen, Brain, FileText, Loader2, Network, Trash2, List, ChevronUp } from 'lucide-react'
+import { Upload, BookOpen, Brain, FileText, Loader2, Network, Trash2, List, ChevronUp, Globe } from 'lucide-react'
 import { EpubProcessor, type ChapterData } from './services/epubProcessor'
 import { PdfProcessor } from './services/pdfProcessor'
+import { WordProcessor } from './services/wordProcessor'
+import { HtmlProcessor } from './services/htmlProcessor'
+import { WebContentProcessor } from './services/webContentProcessor'
+import { TextContentProcessor } from './services/textContentProcessor'
 import { AIService } from './services/geminiService'
 import { CacheService } from './services/cacheService'
 import { DynamicConfigDialog } from './components/project/DynamicConfigDialog'
@@ -57,6 +61,11 @@ const cacheService = new CacheService()
 function App() {
   const { t } = useTranslation()
   const [file, setFile] = useState<File | null>(null)
+  const [webUrl, setWebUrl] = useState('')
+  const [textContent, setTextContent] = useState('')
+  const [inputMode, setInputMode] = useState<'file' | 'url' | 'text'>('file')
+  const [webProcessing, setWebProcessing] = useState(false)
+  const [textProcessing, setTextProcessing] = useState(false)
   const [processing, setProcessing] = useState(false)
   const [extractingChapters, setExtractingChapters] = useState(false)
   const [progress, setProgress] = useState(0)
@@ -95,8 +104,10 @@ function App() {
 
   const handleFileChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0]
-    if (selectedFile && (selectedFile.name.endsWith('.epub') || selectedFile.name.endsWith('.pdf'))) {
+    if (selectedFile && (selectedFile.name.endsWith('.epub') || selectedFile.name.endsWith('.pdf') || selectedFile.name.endsWith('.docx') || selectedFile.name.endsWith('.doc') || selectedFile.name.endsWith('.html') || selectedFile.name.endsWith('.htm'))) {
       setFile(selectedFile)
+      setWebUrl('') // 清空URL输入
+      setInputMode('file')
       // 重置章节提取状态
       setExtractedChapters(null)
       setSelectedChapters(new Set())
@@ -111,12 +122,50 @@ function App() {
     }
   }, [t])
 
+  const handleUrlChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const url = event.target.value
+    setWebUrl(url)
+    if (url.trim()) {
+      setFile(null) // 清空文件选择
+      setInputMode('url')
+      // 重置章节提取状态
+      setExtractedChapters(null)
+      setSelectedChapters(new Set())
+      setBookData(null)
+      setBookSummary(null)
+      setBookMindMap(null)
+    }
+  }, [])
+
+  const handleInputModeChange = useCallback((mode: 'file' | 'url' | 'text') => {
+    setInputMode(mode)
+    if (mode === 'file') {
+      setWebUrl('')
+      setTextContent('')
+    } else if (mode === 'url') {
+      setFile(null)
+      setTextContent('')
+    } else if (mode === 'text') {
+      setFile(null)
+      setWebUrl('')
+    }
+    // 重置章节提取状态
+    setExtractedChapters(null)
+    setSelectedChapters(new Set())
+    setBookData(null)
+    setBookSummary(null)
+    setBookMindMap(null)
+  }, [])
+
   // 清除章节缓存的函数
   const clearChapterCache = (chapterId: string) => {
-    if (!file) return
+    const cacheKey = inputMode === 'file' ? file?.name : 
+                     inputMode === 'url' ? webUrl : 
+                     inputMode === 'text' ? `text_${textContent.substring(0, 50)}` : null
+    if (!cacheKey) return
 
     const type = processingMode === 'summary' ? 'summary' : 'mindmap'
-    if (cacheService.clearChapterCache(file.name, chapterId, type)) {
+    if (cacheService.clearChapterCache(cacheKey, chapterId, type)) {
       toast.success('已清除缓存，下次处理将重新生成内容', {
         duration: 3000,
         position: 'top-center',
@@ -126,7 +175,10 @@ function App() {
 
   // 清除特定类型缓存的函数
   const clearSpecificCache = (cacheType: 'connections' | 'overall_summary' | 'combined_mindmap' | 'merged_mindmap') => {
-    if (!file) return
+    const cacheKey = inputMode === 'file' ? file?.name : 
+                     inputMode === 'url' ? webUrl : 
+                     inputMode === 'text' ? `text_${textContent.substring(0, 50)}` : null
+    if (!cacheKey) return
 
     const displayNames = {
       connections: '章节关联',
@@ -135,7 +187,7 @@ function App() {
       merged_mindmap: '章节思维导图整合'
     }
 
-    if (cacheService.clearSpecificCache(file.name, cacheType)) {
+    if (cacheService.clearSpecificCache(cacheKey, cacheType)) {
       toast.success(`已清除${displayNames[cacheType]}缓存，下次处理将重新生成内容`, {
         duration: 3000,
         position: 'top-center',
@@ -174,10 +226,13 @@ function App() {
 
   // 清除整本书缓存的函数
   const clearBookCache = () => {
-    if (!file) return
+    const cacheKey = inputMode === 'file' ? file?.name : 
+                     inputMode === 'url' ? webUrl : 
+                     inputMode === 'text' ? `text_${textContent.substring(0, 50)}` : null
+    if (!cacheKey) return
 
     const mode = processingMode === 'combined-mindmap' ? 'combined_mindmap' : processingMode as 'summary' | 'mindmap'
-    const deletedCount = cacheService.clearBookCache(file.name, mode)
+    const deletedCount = cacheService.clearBookCache(cacheKey, mode)
 
     const modeNames = {
       'summary': '文字总结',
@@ -198,8 +253,106 @@ function App() {
     }
   }
 
-  // 提取章节的函数
-  const extractChapters = useCallback(async () => {
+  // 专门的网页地址处理函数
+  const handleWebUrlExtract = useCallback(async () => {
+    if (!webUrl.trim()) {
+      toast.error(t('upload.pleaseEnterUrl'), {
+        duration: 3000,
+        position: 'top-center',
+      })
+      return
+    }
+
+    setWebProcessing(true)
+    setProgress(0)
+    setCurrentStep('')
+
+    try {
+      const processor = new WebContentProcessor()
+      setCurrentStep('正在获取网页内容...')
+      const bookData = await processor.parseWebContent(webUrl)
+      setProgress(50)
+
+      setCurrentStep('正在提取章节内容...')
+      const chapters = await processor.extractChapters(webUrl, useSmartDetection, skipNonEssentialChapters, processingOptions.maxSubChapterDepth)
+      setProgress(100)
+
+      setBookData({ title: bookData.title, author: bookData.author })
+      setExtractedChapters(chapters)
+      // 默认选中所有章节
+      setSelectedChapters(new Set(chapters.map(chapter => chapter.id)))
+      setCurrentStep(`网页章节提取完成！共提取到 ${chapters.length} 个章节`)
+
+      toast.success(`成功提取 ${chapters.length} 个章节`, {
+        duration: 3000,
+        position: 'top-center',
+      })
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t('progress.extractionError'), {
+        duration: 5000,
+        position: 'top-center',
+      })
+    } finally {
+      setWebProcessing(false)
+    }
+  }, [webUrl, useSmartDetection, skipNonEssentialChapters, processingOptions.maxSubChapterDepth, t])
+
+  // 文本内容处理函数
+  const handleTextExtract = useCallback(async () => {
+    if (!textContent.trim()) {
+      toast.error(t('upload.pleaseEnterText'), {
+        duration: 3000,
+        position: 'top-center',
+      })
+      return
+    }
+
+    if (textContent.length > 2000) {
+      toast.error(t('upload.textTooLong'), {
+        duration: 3000,
+        position: 'top-center',
+      })
+      return
+    }
+
+    setTextProcessing(true)
+    setProgress(0)
+    setCurrentStep('')
+
+    try {
+      setCurrentStep('正在分析文本内容...')
+      setProgress(50)
+
+      // 创建文本处理器
+      const processor = new TextContentProcessor()
+      const bookData = await processor.parseText(textContent)
+      
+      setCurrentStep('正在提取章节内容...')
+      const chapters = await processor.extractChapters(textContent, useSmartDetection, skipNonEssentialChapters, processingOptions.maxSubChapterDepth)
+      setProgress(100)
+
+      setBookData({ title: bookData.title, author: bookData.author })
+      setExtractedChapters(chapters)
+      // 默认选中所有章节
+      setSelectedChapters(new Set(chapters.map(chapter => chapter.id)))
+      setCurrentStep(`文本章节提取完成！共提取到 ${chapters.length} 个章节`)
+
+      toast.success(`成功提取 ${chapters.length} 个章节`, {
+        duration: 3000,
+        position: 'top-center',
+      })
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t('progress.extractionError'), {
+        duration: 5000,
+        position: 'top-center',
+      })
+    } finally {
+      setTextProcessing(false)
+    }
+  }, [textContent, useSmartDetection, skipNonEssentialChapters, processingOptions.maxSubChapterDepth, t])
+
+  // 文件章节提取函数
+  const extractFileChapters = useCallback(async () => {
     if (!file) {
       toast.error(t('upload.pleaseSelectFile'), {
         duration: 3000,
@@ -216,13 +369,16 @@ function App() {
       let extractedBookData: { title: string; author: string }
       let chapters: ChapterData[]
 
-      const isEpub = file.name.endsWith('.epub')
-      const isPdf = file.name.endsWith('.pdf')
+      // 处理文件输入
+      const isEpub = file!.name.endsWith('.epub')
+      const isPdf = file!.name.endsWith('.pdf')
+      const isWord = file!.name.endsWith('.docx') || file!.name.endsWith('.doc')
+      const isHtml = file!.name.endsWith('.html') || file!.name.endsWith('.htm')
 
       if (isEpub) {
         const processor = new EpubProcessor()
         setCurrentStep('正在解析 EPUB 文件...')
-        const bookData = await processor.parseEpub(file)
+        const bookData = await processor.parseEpub(file!)
         extractedBookData = { title: bookData.title, author: bookData.author }
         setProgress(50)
 
@@ -231,12 +387,30 @@ function App() {
       } else if (isPdf) {
         const processor = new PdfProcessor()
         setCurrentStep('正在解析 PDF 文件...')
-        const bookData = await processor.parsePdf(file)
+        const bookData = await processor.parsePdf(file!)
         extractedBookData = { title: bookData.title, author: bookData.author }
         setProgress(50)
 
         setCurrentStep('正在提取章节内容...')
-        chapters = await processor.extractChapters(file, useSmartDetection, skipNonEssentialChapters, processingOptions.maxSubChapterDepth)
+        chapters = await processor.extractChapters(file!, useSmartDetection, skipNonEssentialChapters, processingOptions.maxSubChapterDepth)
+      } else if (isWord) {
+        const processor = new WordProcessor()
+        setCurrentStep('正在解析 Word 文件...')
+        const bookData = await processor.parseWord(file!)
+        extractedBookData = { title: bookData.title, author: bookData.author }
+        setProgress(50)
+
+        setCurrentStep('正在提取章节内容...')
+        chapters = await processor.extractChapters(file!, useSmartDetection, skipNonEssentialChapters, processingOptions.maxSubChapterDepth)
+      } else if (isHtml) {
+        const processor = new HtmlProcessor()
+        setCurrentStep('正在解析 HTML 文件...')
+        const bookData = await processor.parseHtml(file!)
+        extractedBookData = { title: bookData.title, author: bookData.author }
+        setProgress(50)
+
+        setCurrentStep('正在提取章节内容...')
+        chapters = await processor.extractChapters(file!, useSmartDetection, skipNonEssentialChapters, processingOptions.maxSubChapterDepth)
       } else {
         throw new Error('不支持的文件格式')
       }
@@ -270,7 +444,10 @@ function App() {
       })
       return
     }
-    if (!file) return
+    const cacheKey = inputMode === 'file' ? file?.name : 
+                     inputMode === 'url' ? webUrl : 
+                     inputMode === 'text' ? `text_${textContent.substring(0, 50)}` : null
+    if (!cacheKey) return
 
     if (selectedChapters.size === 0) {
       toast.error(t('chapters.selectAtLeastOne'), {
@@ -338,11 +515,11 @@ function App() {
 
         if (processingMode === 'summary') {
           // 文字总结模式
-          let summary = cacheService.getString(file.name, 'summary', chapter.id)
+          let summary = cacheService.getString(cacheKey, 'summary', chapter.id)
 
           if (!summary) {
             summary = await aiService.summarizeChapter(chapter.title, chapter.content, bookType, processingOptions.outputLanguage, customPrompt)
-            cacheService.setCache(file.name, 'summary', summary, chapter.id)
+            cacheService.setCache(cacheKey, 'summary', summary, chapter.id)
           }
 
           processedChapter = {
@@ -359,11 +536,11 @@ function App() {
           }))
         } else if (processingMode === 'mindmap') {
           // 章节思维导图模式
-          let mindMap = cacheService.getMindMap(file.name, 'mindmap', chapter.id)
+          let mindMap = cacheService.getMindMap(cacheKey, 'mindmap', chapter.id)
 
           if (!mindMap) {
             mindMap = await aiService.generateChapterMindMap(chapter.content, processingOptions.outputLanguage, customPrompt)
-            cacheService.setCache(file.name, 'mindmap', mindMap, chapter.id)
+            cacheService.setCache(cacheKey, 'mindmap', mindMap, chapter.id)
           }
 
           if (!mindMap.nodeData) continue // 无需总结的章节
@@ -401,11 +578,11 @@ function App() {
         // 文字总结模式的后续步骤
         // 步骤4: 分析章节关联
         setCurrentStep('正在分析章节关联...')
-        let connections = cacheService.getString(file.name, 'connections')
+        let connections = cacheService.getString(cacheKey, 'connections')
         if (!connections) {
           console.log('🔄 [DEBUG] 缓存未命中，开始分析章节关联')
           connections = await aiService.analyzeConnections(processedChapters, processingOptions.outputLanguage)
-          cacheService.setCache(file.name, 'connections', connections)
+          cacheService.setCache(cacheKey, 'connections', connections)
           console.log('💾 [DEBUG] 章节关联已缓存')
         } else {
           console.log('✅ [DEBUG] 使用缓存的章节关联')
@@ -419,7 +596,7 @@ function App() {
 
         // 步骤5: 生成全书总结
         setCurrentStep('正在生成全书总结...')
-        let overallSummary = cacheService.getString(file.name, 'overall_summary')
+        let overallSummary = cacheService.getString(cacheKey, 'overall_summary')
         if (!overallSummary) {
           console.log('🔄 [DEBUG] 缓存未命中，开始生成全书总结')
           overallSummary = await aiService.generateOverallSummary(
@@ -428,7 +605,7 @@ function App() {
             connections!,
             processingOptions.outputLanguage
           )
-          cacheService.setCache(file.name, 'overall_summary', overallSummary)
+          cacheService.setCache(cacheKey, 'overall_summary', overallSummary)
           console.log('💾 [DEBUG] 全书总结已缓存')
         } else {
           console.log('✅ [DEBUG] 使用缓存的全书总结')
@@ -442,7 +619,7 @@ function App() {
         // 章节思维导图模式的后续步骤
         // 步骤4: 合并章节思维导图
         setCurrentStep('正在合并章节思维导图...')
-        let combinedMindMap = cacheService.getMindMap(file.name, 'merged_mindmap')
+        let combinedMindMap = cacheService.getMindMap(cacheKey, 'merged_mindmap')
         if (!combinedMindMap) {
           console.log('🔄 [DEBUG] 缓存未命中，开始合并章节思维导图')
           // 创建根节点
@@ -463,7 +640,7 @@ function App() {
             summaries: processedChapters.reduce((acc, chapter) => acc.concat(chapter.mindMap?.summaries || []), [] as Summary[])
           }
 
-          cacheService.setCache(file.name, 'merged_mindmap', combinedMindMap)
+          cacheService.setCache(cacheKey, 'merged_mindmap', combinedMindMap)
           console.log('💾 [DEBUG] 合并思维导图已缓存')
         } else {
           console.log('✅ [DEBUG] 使用缓存的合并思维导图')
@@ -479,11 +656,11 @@ function App() {
         // 整书思维导图模式的后续步骤
         // 步骤4: 生成整书思维导图
         setCurrentStep('正在生成整书思维导图...')
-        let combinedMindMap = cacheService.getMindMap(file.name, 'combined_mindmap')
+        let combinedMindMap = cacheService.getMindMap(cacheKey, 'combined_mindmap')
         if (!combinedMindMap) {
           console.log('🔄 [DEBUG] 缓存未命中，开始生成整书思维导图')
           combinedMindMap = await aiService.generateCombinedMindMap(bookData.title, processedChapters, customPrompt)
-          cacheService.setCache(file.name, 'combined_mindmap', combinedMindMap)
+          cacheService.setCache(cacheKey, 'combined_mindmap', combinedMindMap)
           console.log('💾 [DEBUG] 整书思维导图已缓存')
         } else {
           console.log('✅ [DEBUG] 使用缓存的整书思维导图')
@@ -506,7 +683,7 @@ function App() {
     } finally {
       setProcessing(false)
     }
-  }, [extractedChapters, bookData, apiKey, file, selectedChapters, processingMode, bookType, customPrompt, processingOptions.outputLanguage, t])
+  }, [extractedChapters, bookData, apiKey, file, webUrl, textContent, inputMode, selectedChapters, processingMode, bookType, customPrompt, processingOptions.outputLanguage, t])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
@@ -533,21 +710,113 @@ function App() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            {/* 输入模式选择 */}
             <div className="space-y-2">
-              <Label htmlFor="file">{t('upload.selectFile')}</Label>
-              <Input
-                id="file"
-                type="file"
-                accept=".epub,.pdf"
-                onChange={handleFileChange}
-                disabled={processing}
-              />
+              <Label>{t('upload.inputMode')}</Label>
+              <div className="flex gap-2 flex-wrap">
+                <Button
+                  variant={inputMode === 'file' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => handleInputModeChange('file')}
+                  disabled={processing}
+                  className="flex items-center gap-2"
+                >
+                  <FileText className="h-4 w-4" />
+                  {t('upload.fileMode')}
+                </Button>
+                <Button
+                  variant={inputMode === 'url' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => handleInputModeChange('url')}
+                  disabled={processing}
+                  className="flex items-center gap-2"
+                >
+                  <Globe className="h-4 w-4" />
+                  {t('upload.urlMode')}
+                </Button>
+                <Button
+                  variant={inputMode === 'text' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => handleInputModeChange('text')}
+                  disabled={processing}
+                  className="flex items-center gap-2"
+                >
+                  <FileText className="h-4 w-4" />
+                  {t('upload.textMode')}
+                </Button>
+              </div>
             </div>
+
+            {/* 文件输入 */}
+            {inputMode === 'file' && (
+              <div className="space-y-2">
+                <Label htmlFor="file">{t('upload.selectFile')}</Label>
+                <Input
+                  id="file"
+                  type="file"
+                  accept=".epub,.pdf,.docx,.doc,.html,.htm"
+                  onChange={handleFileChange}
+                  disabled={processing}
+                />
+              </div>
+            )}
+
+            {/* URL输入 */}
+            {inputMode === 'url' && (
+              <div className="space-y-2">
+                <Label htmlFor="url">{t('upload.enterUrl')}</Label>
+                <Input
+                  id="url"
+                  type="url"
+                  placeholder={t('upload.urlPlaceholder')}
+                  value={webUrl}
+                  onChange={handleUrlChange}
+                  disabled={processing}
+                />
+                <p className="text-xs text-gray-500">
+                  {t('upload.urlDescription')}
+                </p>
+              </div>
+            )}
+
+            {/* 文本输入 */}
+            {inputMode === 'text' && (
+              <div className="space-y-2">
+                <Label htmlFor="text">{t('upload.enterText')}</Label>
+                <Textarea
+                  id="text"
+                  placeholder={t('upload.textPlaceholder')}
+                  value={textContent}
+                  onChange={(e) => setTextContent(e.target.value)}
+                  disabled={processing}
+                  className="min-h-32 resize-none"
+                  maxLength={2000}
+                />
+                <div className="flex justify-between text-xs text-gray-500">
+                  <span>{t('upload.textDescription')}</span>
+                  <span>{textContent.length}/2000</span>
+                </div>
+              </div>
+            )}
 
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-sm text-gray-600">
-                <FileText className="h-4 w-4" />
-                {t('upload.selectedFile')}: {file?.name || t('upload.noFileSelected')}
+                {inputMode === 'file' ? (
+                  <>
+                    <FileText className="h-4 w-4" />
+                    {t('upload.selectedFile')}: {file?.name || t('upload.noFileSelected')}
+                  </>
+                ) : inputMode === 'url' ? (
+                  <>
+                    <Globe className="h-4 w-4" />
+                    {t('upload.selectedUrl')}: {webUrl || t('upload.noUrlEntered')}
+                  </>
+                ) : (
+                  <>
+                    <FileText className="h-4 w-4" />
+                    {t('upload.selectedText')}: {textContent ? `${textContent.length} 字符` : t('upload.noTextEntered')}
+                  </>
+                )}
               </div>
               <div className="flex items-center gap-2">
                 <DynamicConfigDialog processing={processing} />
@@ -564,23 +833,61 @@ function App() {
               </div>
             </div>
             <div className="space-y-2">
-              <Button
-                onClick={extractChapters}
-                disabled={!file || extractingChapters || processing}
-                className="w-full"
-              >
-                {extractingChapters ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    {t('upload.extractingChapters')}
-                  </>
-                ) : (
-                  <>
-                    <List className="mr-2 h-4 w-4" />
-                    {t('upload.extractChapters')}
-                  </>
-                )}
-              </Button>
+              {inputMode === 'file' ? (
+                <Button
+                  onClick={extractFileChapters}
+                  disabled={!file || extractingChapters || processing}
+                  className="w-full"
+                >
+                  {extractingChapters ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      {t('upload.extractingChapters')}
+                    </>
+                  ) : (
+                    <>
+                      <List className="mr-2 h-4 w-4" />
+                      {t('upload.extractChapters')}
+                    </>
+                  )}
+                </Button>
+              ) : inputMode === 'url' ? (
+                <Button
+                  onClick={handleWebUrlExtract}
+                  disabled={!webUrl.trim() || webProcessing || processing}
+                  className="w-full"
+                >
+                  {webProcessing ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      {t('upload.extractingWebContent')}
+                    </>
+                  ) : (
+                    <>
+                      <Globe className="mr-2 h-4 w-4" />
+                      {t('upload.extractWebContent')}
+                    </>
+                  )}
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleTextExtract}
+                  disabled={!textContent.trim() || textProcessing || processing}
+                  className="w-full"
+                >
+                  {textProcessing ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      {t('upload.extractingTextContent')}
+                    </>
+                  ) : (
+                    <>
+                      <FileText className="mr-2 h-4 w-4" />
+                      {t('upload.extractTextContent')}
+                    </>
+                  )}
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -676,7 +983,7 @@ function App() {
             </CardContent>
           </Card>
         )}
-        {(processing || extractingChapters) && (
+        {(processing || extractingChapters || webProcessing || textProcessing) && (
           <Card>
             <CardContent>
               <div className="space-y-2">

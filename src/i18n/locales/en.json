@@ -1,19 +1,40 @@
 {
   "app": {
     "title": "eBook to Mind Map",
-    "description": "Use AI technology to parse EPUB and PDF eBooks by chapters and generate intelligent summaries"
+    "description": "Use AI technology to parse EPUB, PDF, Word and HTML documents by chapters and generate intelligent summaries"
   },
   "upload": {
     "title": "File Upload & Configuration",
-    "description": "Select EPUB or PDF file and configure AI service",
-    "selectFile": "Select EPUB or PDF file",
-    "selectedFile": "Selected",
+    "description": "Select EPUB, PDF, Word or HTML file, enter web URL, or directly paste text content and configure AI service",
+    "inputMode": "Input Mode",
+    "fileMode": "File Upload",
+    "urlMode": "Web URL",
+    "textMode": "Text Input",
+    "selectFile": "Select EPUB, PDF, Word or HTML file",
+    "enterUrl": "Enter Web URL",
+    "enterText": "Enter Text Content",
+    "urlPlaceholder": "https://example.com/article",
+    "textPlaceholder": "Please enter or paste text content here...",
+    "urlDescription": "Support entering any web URL, the system will automatically fetch web content and parse chapters",
+    "textDescription": "Support direct text input or pasting, the system will intelligently analyze and extract chapters",
+    "selectedFile": "Selected File",
+    "selectedUrl": "Entered URL",
+    "selectedText": "Entered Text",
     "noFileSelected": "No file selected",
+    "noUrlEntered": "No URL entered",
+    "noTextEntered": "No text entered",
     "clearCache": "Clear Cache",
     "extractChapters": "Extract Chapters",
     "extractingChapters": "Extracting chapters...",
-    "invalidFile": "Please select a valid EPUB or PDF file",
-    "pleaseSelectFile": "Please select a file"
+    "extractWebContent": "Fetch Web Content",
+    "extractingWebContent": "Fetching web content...",
+    "extractTextContent": "Analyze Text Content",
+    "extractingTextContent": "Analyzing text content...",
+    "invalidFile": "Please select a valid EPUB, PDF, Word or HTML file",
+    "pleaseSelectFile": "Please select a file",
+    "pleaseEnterUrl": "Please enter a web URL",
+    "pleaseEnterText": "Please enter text content",
+    "textTooLong": "Text content exceeds 2000 character limit"
   },
   "chapters": {
     "title": "Chapter Selection",

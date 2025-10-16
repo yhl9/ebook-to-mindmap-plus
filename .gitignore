@@ -22,3 +22,18 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+docs/Word处理问题排查.md
+.gitignore
+docs/Word文档解析改进-多方法检测.md
+docs/Word文档测试指南.md
+Make Money with ChatGPT - Benjamin Preston.docx
+docs/Word文档解析改进总结.md
+docs/Word文档章节提取详细调试指南.md
+docs/Word文档解析调试指南.md
+docs/Word文档测试指南-简化版.md
+docs/Word标题解析改进说明.md
+docs/Word标题解析测试用例.md
+docs/Word标题解析调试指南.md
+docs/Chapter检测测试指南.md
+docs/Word文档章节提取修复指南.md
+docs/Word文档HTML标题标签修复指南.md

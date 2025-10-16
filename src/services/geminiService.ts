@@ -20,7 +20,7 @@ interface Chapter {
 }
 
 interface AIConfig {
-  provider: 'gemini' | 'openai' | 'deepseek'
+  provider: 'gemini' | 'openai' | 'deepseek' | 'claude' | 'siliconflow' | 'openrouter'
   apiKey: string
   apiUrl?: string // 用于OpenAI兼容的API地址
   model?: string
